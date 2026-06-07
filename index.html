@@ -82,19 +82,19 @@
         .down { grid-column: 2; grid-row: 2; }
         .right { grid-column: 3; grid-row: 2; }
 
-        /* SAYAÇ VE ANALİZ ALANI TASARIMI */
+        /* SAYAÇ ALANI TASARIMI */
         .visitor-counter {
             margin-top: 25px;
             font-size: 14px;
             color: #aaa;
             background: #1a1a1a;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             display: inline-block;
             border: 1px solid #333;
         }
         .visitor-counter img {
-            margin-top: 5px;
+            margin-top: 8px;
             vertical-align: middle;
         }
     </style>
@@ -116,7 +116,7 @@
 
         <div class="visitor-counter">
             <div>🎮 Toplam Ziyaret Sayısı</div>
-            <img src="https://profile-counter.glitch.me/keroxsancak-yilan-oyunu/count.svg" alt="Ziyaretçi Sayacı">
+            <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fkeroxsancak.github.io%2Fyilan-oyunu&count_bg=%234CAF50&title_bg=%231A1A1A&icon=&icon_color=%23E7E7E7&title=Ziyaret&edge_flat=false" alt="Ziyaretçi Sayacı">
         </div>
     </div>
 
@@ -157,70 +157,5 @@
 
             // 2. DOKUNMATİK KONTROLLER
             document.getElementById("btnLeft").addEventListener("click", () => { if(d != "RIGHT") d = "LEFT"; });
-            document.getElementById("btnUp").addEventListener("click", () => { if(d != "DOWN") d = "UP"; });
-            document.getElementById("btnRight").addEventListener("click", () => { if(d != "LEFT") d = "RIGHT"; });
-            document.getElementById("btnDown").addEventListener("click", () => { if(d != "UP") d = "DOWN"; });
-
-            function collision(head, array) {
-                for (let i = 0; i < array.length; i++) {
-                    if (head.x == array[i].x && head.y == array[i].y) return true;
-                }
-                return false;
-            }
-
-            function gameLoop() {
-                ctx.fillStyle = "#111";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                for (let i = 0; i < snake.length; i++) {
-                    ctx.fillStyle = (i == 0) ? "#4CAF50" : "#81C784";
-                    ctx.fillRect(snake[i].x, snake[i].y, box, box);
-                    ctx.strokeStyle = "#111";
-                    ctx.strokeRect(snake[i].x, snake[i].y, box, box);
-                }
-
-                ctx.fillStyle = "#FF5722";
-                ctx.fillRect(food.x, food.y, box, box);
-
-                let snakeX = snake[0].x;
-                let snakeY = snake[0].y;
-
-                if (d == "LEFT") snakeX -= box;
-                if (d == "UP") snakeY -= box;
-                if (d == "RIGHT") snakeX += box;
-                if (d == "DOWN") snakeY += box;
-
-                if (snakeX == food.x && snakeY == food.y) {
-                    score++;
-                    document.getElementById("score").innerText = score;
-                    
-                    if (currentSpeed > minSpeed) {
-                        currentSpeed -= speedStep;
-                    }
-
-                    food = {
-                        x: Math.floor(Math.random() * 20) * box,
-                        y: Math.floor(Math.random() * 20) * box
-                    };
-                } else {
-                    snake.pop();
-                }
-
-                let newHead = { x: snakeX, y: snakeY };
-
-                if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
-                    clearTimeout(gameTimeout);
-                    alert("Oyun Bitti! Skorun: " + score);
-                    location.reload(); 
-                    return;
-                }
-
-                snake.unshift(newHead);
-                gameTimeout = setTimeout(gameLoop, currentSpeed);
-            }
-
-            gameLoop();
-        });
-    </script>
-</body>
-</html>
+            document.getElementById("btnUp").addEventListener("click", ()
+                

@@ -72,7 +72,7 @@
         .down { grid-column: 2; grid-row: 2; }
         .right { grid-column: 3; grid-row: 2; }
 
-        /* GİRİŞ EKRANI TASARIMI */
+        /* GİRİŞ EKRANI */
         .login-box {
             background: #111;
             padding: 30px 20px;
@@ -119,7 +119,7 @@
         
         <div class="login-box" id="loginBox">
             <h2>🎮 OYUNA BAŞLA 🎮</h2>
-            <p style="font-size: 14px; color: #aaa;">Giriş yapmak ve yılanı kontrol etmek için adınızı yazın:</p>
+            <p style="font-size: 14px; color: #aaa;">Yılanı kontrol etmek için adınızı yazın:</p>
             <input type="text" id="playerName" placeholder="Adınız Soyadınız" maxlength="20" required>
             <button id="startBtn">OYUNU BAŞLAT</button>
         </div>
@@ -146,25 +146,29 @@
                 return;
             }
             oyuncuAdi = inputName;
-            
-            // İsmi senin GoatCounter paneline "Özel Sayfa Açılmış" gibi fırlatır
-            if (window.goatcounter && window.goatcounter.count) {
-                window.goatcounter.count({
-                    path: 'giren-' + oyuncuAdi,
-                    title: 'Oyuncu Giriş Yaptı',
-                    event: false
-                });
-            }
+
+            // İSMİ ANINDA PANELDEN OKUNACAK ŞEKİLDE LOGSNAG KÖPRÜSÜNE FIRLATIR
+            fetch("https://api.logsnag.com/v1/log", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer 81ba31693fa78d5910fae1c2788e06dc"
+                },
+                body: JSON.stringify({
+                    project: "yilan-oyunu",
+                    channel: "girişler",
+                    event: oyuncuAdi + " oyuna giriş yaptı!",
+                    description: "Bir arkadaşın adını yazarak yılan oyununu oynamaya başladı.",
+                    icon: "🎮"
+                })
+            }).catch(e => console.log(e));
 
             document.getElementById("loginBox").style.display = "none";
             document.getElementById("gameArea").style.display = "block";
             initGame();
         });
-    </script>
 
-    <script data-goatcounter="https://keroxsancak.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-
-    <script>
+        // OYUN MOTORU
         function initGame() {
             const canvas = document.getElementById("gameCanvas");
             const ctx = canvas.getContext("2d");
@@ -241,6 +245,22 @@
 
                 if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
                     clearTimeout(gameTimeout);
+                    
+                    // OYUN BİTTİĞİNDE DE SKORU GÖNDER
+                    fetch("https://api.logsnag.com/v1/log", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer 81ba31693fa78d5910fae1c2788e06dc"
+                        },
+                        body: JSON.stringify({
+                            project: "yilan-oyunu",
+                            channel: "skorlar",
+                            event: oyuncuAdi + " yandı! Skor: " + score,
+                            icon: "💀"
+                        })
+                    }).catch(e => console.log(e));
+
                     alert("Oyun Bitti! Skorun: " + score);
                     location.reload(); 
                     return;

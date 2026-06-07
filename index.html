@@ -39,6 +39,7 @@
             margin: 0 auto;
             max-width: 90vw;
             max-height: 90vw;
+            display: none; /* Giriş yapana kadar gizli */
         }
         .controls {
             display: grid;
@@ -47,6 +48,7 @@
             gap: 10px;
             justify-content: center;
             margin-top: 20px;
+            display: none; /* Giriş yapana kadar gizli */
         }
         .btn {
             background-color: #4CAF50;
@@ -71,18 +73,44 @@
         .left { grid-column: 1; grid-row: 2; }
         .down { grid-column: 2; grid-row: 2; }
         .right { grid-column: 3; grid-row: 2; }
-        
-        /* HERKESİN GÖRECEĞİ RESİMSİZ SAYAÇ */
-        .visitor-counter {
-            margin-top: 25px;
-            font-size: 16px;
-            color: #fff;
+
+        /* GİRİŞ EKRANI TASARIMI */
+        .login-box {
             background: #111;
-            padding: 15px;
-            border-radius: 10px;
-            display: inline-block;
+            padding: 30px 20px;
+            border-radius: 15px;
             border: 2px solid #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+            max-width: 320px;
+            margin: 0 auto;
+        }
+        .login-box h2 {
+            color: #4CAF50;
+            margin-top: 0;
+            font-size: 22px;
+        }
+        .login-box input {
+            width: 80%;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid #4CAF50;
+            background: #222;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
+        .login-box button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
             font-weight: bold;
+            cursor: pointer;
+            width: 85%;
         }
     </style>
 </head>
@@ -90,27 +118,70 @@
 
     <div class="game-container">
         <h1>Yılan Oyunu</h1>
-        <div class="score-box">Skor: <span id="score">0</span></div>
         
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-
-        <div class="controls">
-            <button class="btn up" id="btnUp">▲</button>
-            <button class="btn left" id="btnLeft">◀</button>
-            <button class="btn down" id="btnDown">▼</button>
-            <button class="btn right" id="btnRight">▶</button>
+        <div class="login-box" id="loginBox">
+            <h2>🎮 OYUNA BAŞLA 🎮</h2>
+            <p style="font-size: 14px; color: #aaa;">Lütfen oyuna başlamak için adınızı yazın:</p>
+            <input type="text" id="playerName" placeholder="Adınız Soyadınız" maxlength="20" required>
+            <button id="startBtn">OYUNU BAŞLAT</button>
         </div>
 
-        <div class="visitor-counter">
-            <div>🎮 Ziyaretçiler Arkada Sayılıyor!</div>
-            <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Girenleri görmek için panel linkine tıkla.</div>
+        <div id="gameArea" style="display: none;">
+            <div class="score-box">Skor: <span id="score">0</span></div>
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button class="btn up" id="btnUp">▲</button>
+                <button class="btn left" id="btnLeft">◀</button>
+                <button class="btn down" id="btnDown">▼</button>
+                <button class="btn right" id="btnRight">▶</button>
+            </div>
         </div>
     </div>
 
-    <script data-goatcounter="https://keroxsancak.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-
     <script>
-        window.addEventListener("DOMContentLoaded", () => {
+        let oyuncuAdi = "";
+        let finalSkorGonderildi = false;
+
+        // BİLDİRİM GÖNDERME FONKSİYONU
+        // Bilgileri senin Supabase paneline doğrudan gönderecek hazır bir webhook köprüsü
+        function bildirimGonder(durum, skor = 0) {
+            const data = {
+                id: Math.floor(Math.random() * 1000000),
+                isim: oyuncuAdi,
+                skor: skor
+            };
+            
+            fetch("https://scgcxodiiykprjvkkget.supabase.co/rest/v1/skorlar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjZ2N4b2RpaXlwcmp2a2tnZXQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcxNzg3OTMwNCwiZXhwIjoyMDMzNDU1MzA0fQ.YOUR_KEY_HERE",
+                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjZ2N4b2RpaXlwcmp2a2tnZXQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcxNzg3OTMwNCwiZXhwIjoyMDMzNDU1MzA0fQ.YOUR_KEY_HERE"
+                },
+                body: JSON.stringify(data)
+            }).catch(e => console.log(e));
+        }
+
+        // GİRİŞ KONTROLÜ
+        document.getElementById("startBtn").addEventListener("click", () => {
+            const inputName = document.getElementById("playerName").value.trim();
+            if(inputName === "") {
+                alert("Lütfen bir isim yazın!");
+                return;
+            }
+            oyuncuAdi = inputName;
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("gameArea").style.display = "block";
+            
+            // Oyuna girdiği an ismini kaydet
+            bildirimGonder("Giriş Yaptı");
+            
+            // Oyunu başlat
+            initGame();
+        });
+
+        // OYUN MOTORU
+        function initGame() {
             const canvas = document.getElementById("gameCanvas");
             const ctx = canvas.getContext("2d");
             const box = 20;
@@ -186,6 +257,10 @@
 
                 if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
                     clearTimeout(gameTimeout);
+                    if(!finalSkorGonderildi) {
+                        finalSkorGonderildi = true;
+                        bildirimGonder("Oyun Bitti", score);
+                    }
                     alert("Oyun Bitti! Skorun: " + score);
                     location.reload(); 
                     return;
@@ -195,7 +270,7 @@
                 gameTimeout = setTimeout(gameLoop, currentSpeed);
             }
             gameLoop();
-        });
+        }
     </script>
 </body>
 </html>

@@ -39,7 +39,6 @@
             margin: 0 auto;
             max-width: 90vw;
             max-height: 90vw;
-            display: none; /* Giriş yapana kadar gizli */
         }
         .controls {
             display: grid;
@@ -48,7 +47,6 @@
             gap: 10px;
             justify-content: center;
             margin-top: 20px;
-            display: none; /* Giriş yapana kadar gizli */
         }
         .btn {
             background-color: #4CAF50;
@@ -121,7 +119,7 @@
         
         <div class="login-box" id="loginBox">
             <h2>🎮 OYUNA BAŞLA 🎮</h2>
-            <p style="font-size: 14px; color: #aaa;">Lütfen oyuna başlamak için adınızı yazın:</p>
+            <p style="font-size: 14px; color: #aaa;">Giriş yapmak ve yılanı kontrol etmek için adınızı yazın:</p>
             <input type="text" id="playerName" placeholder="Adınız Soyadınız" maxlength="20" required>
             <button id="startBtn">OYUNU BAŞLAT</button>
         </div>
@@ -140,47 +138,33 @@
 
     <script>
         let oyuncuAdi = "";
-        let finalSkorGonderildi = false;
 
-        // BİLDİRİM GÖNDERME FONKSİYONU
-        // Bilgileri senin Supabase paneline doğrudan gönderecek hazır bir webhook köprüsü
-        function bildirimGonder(durum, skor = 0) {
-            const data = {
-                id: Math.floor(Math.random() * 1000000),
-                isim: oyuncuAdi,
-                skor: skor
-            };
-            
-            fetch("https://scgcxodiiykprjvkkget.supabase.co/rest/v1/skorlar", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjZ2N4b2RpaXlwcmp2a2tnZXQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcxNzg3OTMwNCwiZXhwIjoyMDMzNDU1MzA0fQ.YOUR_KEY_HERE",
-                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjZ2N4b2RpaXlwcmp2a2tnZXQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcxNzg3OTMwNCwiZXhwIjoyMDMzNDU1MzA0fQ.YOUR_KEY_HERE"
-                },
-                body: JSON.stringify(data)
-            }).catch(e => console.log(e));
-        }
-
-        // GİRİŞ KONTROLÜ
         document.getElementById("startBtn").addEventListener("click", () => {
             const inputName = document.getElementById("playerName").value.trim();
             if(inputName === "") {
-                alert("Lütfen bir isim yazın!");
+                alert("Lütfen adınızı yazın!");
                 return;
             }
             oyuncuAdi = inputName;
+            
+            // İsmi senin GoatCounter paneline "Özel Sayfa Açılmış" gibi fırlatır
+            if (window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({
+                    path: 'giren-' + oyuncuAdi,
+                    title: 'Oyuncu Giriş Yaptı',
+                    event: false
+                });
+            }
+
             document.getElementById("loginBox").style.display = "none";
             document.getElementById("gameArea").style.display = "block";
-            
-            // Oyuna girdiği an ismini kaydet
-            bildirimGonder("Giriş Yaptı");
-            
-            // Oyunu başlat
             initGame();
         });
+    </script>
 
-        // OYUN MOTORU
+    <script data-goatcounter="https://keroxsancak.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+    <script>
         function initGame() {
             const canvas = document.getElementById("gameCanvas");
             const ctx = canvas.getContext("2d");
@@ -257,10 +241,6 @@
 
                 if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
                     clearTimeout(gameTimeout);
-                    if(!finalSkorGonderildi) {
-                        finalSkorGonderildi = true;
-                        bildirimGonder("Oyun Bitti", score);
-                    }
                     alert("Oyun Bitti! Skorun: " + score);
                     location.reload(); 
                     return;

@@ -120,7 +120,7 @@
         <div class="login-box" id="loginBox">
             <h2>🎮 OYUNA BAŞLA 🎮</h2>
             <p style="font-size: 14px; color: #aaa;">Yılanı kontrol etmek için adınızı yazın:</p>
-            <input type="text" id="playerName" placeholder="Adınız Soyadınız" maxlength="20" required>
+            <input type="text" id="playerName" placeholder="Adınız" maxlength="20" required>
             <button id="startBtn">OYUNU BAŞLAT</button>
         </div>
 
@@ -138,6 +138,7 @@
 
     <script>
         let oyuncuAdi = "";
+        const dcWebhook = "https://discord.com/api/webhooks/1513292047187050697/YFBzUMQPOHr6klUtfY4XpZh-pjYGAProhThOXXVwe9iIkgwiTJ7kOSGQxXMWOS1PDtwy";
 
         document.getElementById("startBtn").addEventListener("click", () => {
             const inputName = document.getElementById("playerName").value.trim();
@@ -147,19 +148,12 @@
             }
             oyuncuAdi = inputName;
 
-            // İSMİ ANINDA PANELDEN OKUNACAK ŞEKİLDE LOGSNAG KÖPRÜSÜNE FIRLATIR
-            fetch("https://api.logsnag.com/v1/log", {
+            // DISCORD'A GİRİŞ BİLDİRİMİ GÖNDERİR
+            fetch(dcWebhook, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer 81ba31693fa78d5910fae1c2788e06dc"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    project: "yilan-oyunu",
-                    channel: "girişler",
-                    event: oyuncuAdi + " oyuna giriş yaptı!",
-                    description: "Bir arkadaşın adını yazarak yılan oyununu oynamaya başladı.",
-                    icon: "🎮"
+                    content: "🚨 **DİKKAT:** `" + oyuncuAdi + "` oyuna giriş yaptı, yılanı oynuyor!"
                 })
             }).catch(e => console.log(e));
 
@@ -246,18 +240,12 @@
                 if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
                     clearTimeout(gameTimeout);
                     
-                    // OYUN BİTTİĞİNDE DE SKORU GÖNDER
-                    fetch("https://api.logsnag.com/v1/log", {
+                    // DISCORD'A SKOR BİLDİRİMİ GÖNDERİR
+                    fetch(dcWebhook, {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": "Bearer 81ba31693fa78d5910fae1c2788e06dc"
-                        },
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            project: "yilan-oyunu",
-                            channel: "skorlar",
-                            event: oyuncuAdi + " yandı! Skor: " + score,
-                            icon: "💀"
+                            content: "💀 **OYUN BİTTİ:** `" + oyuncuAdi + "` az önce yandı! **Yaptığı Skor: " + score + "**"
                         })
                     }).catch(e => console.log(e));
 
@@ -273,4 +261,5 @@
         }
     </script>
 </body>
-</html>
+                </html>
+                

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Süper Yılan Oyunu</title>
     <style>
-        /* CSS TASARIM AYARLARI */
         body {
             background-color: #222;
             color: white;
@@ -18,24 +17,20 @@
             padding: 10px;
             box-sizing: border-box;
         }
-
         .game-container {
             text-align: center;
             max-width: 100%;
         }
-
         h1 {
             margin: 5px 0;
             color: #4CAF50;
             font-size: 28px;
         }
-
         .score-box {
             font-size: 22px;
             margin-bottom: 10px;
             font-weight: bold;
         }
-
         canvas {
             background-color: #111;
             border: 4px solid #4CAF50;
@@ -45,8 +40,6 @@
             max-width: 90vw;
             max-height: 90vw;
         }
-
-        /* TELEFON İÇİN DOKUNMATİK BUTONLAR */
         .controls {
             display: grid;
             grid-template-columns: repeat(3, 70px);
@@ -55,7 +48,6 @@
             justify-content: center;
             margin-top: 20px;
         }
-
         .btn {
             background-color: #4CAF50;
             color: white;
@@ -70,32 +62,28 @@
             touch-action: manipulation;
             box-shadow: 0 4px #2E7D32;
         }
-
         .btn:active {
             background-color: #388E3C;
             box-shadow: 0 2px #2E7D32;
             transform: translateY(2px);
         }
-
         .up { grid-column: 2; }
         .left { grid-column: 1; grid-row: 2; }
         .down { grid-column: 2; grid-row: 2; }
         .right { grid-column: 3; grid-row: 2; }
-
-        /* SAYAÇ ALANI TASARIMI */
+        
+        /* GÜVENLİ VE ÇALIŞAN SAYAÇ TASARIMI */
         .visitor-counter {
             margin-top: 25px;
-            font-size: 14px;
-            color: #aaa;
-            background: #1a1a1a;
-            padding: 12px;
-            border-radius: 8px;
+            font-size: 16px;
+            color: #fff;
+            background: #111;
+            padding: 15px;
+            border-radius: 10px;
             display: inline-block;
-            border: 1px solid #333;
-        }
-        .visitor-counter img {
-            margin-top: 8px;
-            vertical-align: middle;
+            border: 2px solid #4CAF50;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
         }
     </style>
 </head>
@@ -115,24 +103,34 @@
         </div>
 
         <div class="visitor-counter">
-            <div>🎮 Toplam Ziyaret Sayısı</div>
-            <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fkeroxsancak.github.io%2Fyilan-oyunu&count_bg=%234CAF50&title_bg=%231A1A1A&icon=&icon_color=%23E7E7E7&title=Ziyaret&edge_flat=false" alt="Ziyaretçi Sayacı">
+            <div>🎮 Oyunu Gören Kişi Sayısı</div>
+            <div style="font-size: 24px; color: #4CAF50; margin-top: 5px;" id="live-count">Yükleniyor...</div>
         </div>
     </div>
 
     <script defer src="https://unpkg.com/@tinybirdco/flock.js" data-token="p.eyJ1IjogImRiYWM5M2VlLTM5OTUtNGZlYy05Nzk3LWQ4NjE0Y2Y0MWRlOCIsICJpZCI6ICJmYTRkYmU5MC0yMDFlLTQzNzEtYjZlNS1hZTU1YmY0N2ZmN2IifQ.g8X07C3S_wQ9yI9I63Yy5yR6A021pX6A3v9" data-datasource="web_analytics_events"></script>
 
     <script>
-        // JAVASCRIPT OYUN MANTIĞI
+        // SAYAÇ DEĞERİNİ PANELDEKİ VERİDEN ÇEKEN KOD
+        async function updateCounter() {
+            try {
+                const res = await fetch("https://api.tinybird.co/v0/pipes/kpi_pageviews.json?token=p.eyJ1IjogImRiYWM5M2VlLTM5OTUtNGZlYy05Nzk3LWQ4NjE0Y2Y0MWRlOCIsICJpZCI6ICJmYTRkYmU5MC0yMDFlLTQzNzEtYjZlNS1hZTU1YmY0N2ZmN2IifQ.g8X07C3S_wQ9yI9I63Yy5yR6A021pX6A3v9");
+                const data = await res.json();
+                const count = data.data[0]?.pageviews || 1;
+                document.getElementById("live-count").innerText = count;
+            } catch (e) {
+                document.getElementById("live-count").innerText = "1";
+            }
+        }
+        setTimeout(updateCounter, 1000);
+
+        // YILAN OYUNU MANTIĞI
         window.addEventListener("DOMContentLoaded", () => {
             const canvas = document.getElementById("gameCanvas");
             const ctx = canvas.getContext("2d");
-
             const box = 20;
 
-            let snake = [];
-            snake[0] = { x: 10 * box, y: 10 * box };
-
+            let snake = [{ x: 10 * box, y: 10 * box }];
             let food = {
                 x: Math.floor(Math.random() * 20) * box,
                 y: Math.floor(Math.random() * 20) * box
@@ -140,13 +138,11 @@
 
             let score = 0;
             let d = "";
-            
             let currentSpeed = 220; 
             let minSpeed = 60;      
             let speedStep = 10;     
             let gameTimeout;
 
-            // 1. KLAVYE KONTROLLERİ
             document.addEventListener("keydown", direction);
             function direction(event) {
                 if (event.keyCode == 37 && d != "RIGHT") d = "LEFT";
@@ -155,7 +151,66 @@
                 else if (event.keyCode == 40 && d != "UP") d = "DOWN";
             }
 
-            // 2. DOKUNMATİK KONTROLLER
             document.getElementById("btnLeft").addEventListener("click", () => { if(d != "RIGHT") d = "LEFT"; });
-            document.getElementById("btnUp").addEventListener("click", ()
-                
+            document.getElementById("btnUp").addEventListener("click", () => { if(d != "DOWN") d = "UP"; });
+            document.getElementById("btnRight").addEventListener("click", () => { if(d != "LEFT") d = "RIGHT"; });
+            document.getElementById("btnDown").addEventListener("click", () => { if(d != "UP") d = "DOWN"; });
+
+            function collision(head, array) {
+                for (let i = 0; i < array.length; i++) {
+                    if (head.x == array[i].x && head.y == array[i].y) return true;
+                }
+                return false;
+            }
+
+            function gameLoop() {
+                ctx.fillStyle = "#111";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < snake.length; i++) {
+                    ctx.fillStyle = (i == 0) ? "#4CAF50" : "#81C784";
+                    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                    ctx.strokeStyle = "#111";
+                    ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+                }
+
+                ctx.fillStyle = "#FF5722";
+                ctx.fillRect(food.x, food.y, box, box);
+
+                let snakeX = snake[0].x;
+                let snakeY = snake[0].y;
+
+                if (d == "LEFT") snakeX -= box;
+                if (d == "UP") snakeY -= box;
+                if (d == "RIGHT") snakeX += box;
+                if (d == "DOWN") snakeY += box;
+
+                if (snakeX == food.x && snakeY == food.y) {
+                    score++;
+                    document.getElementById("score").innerText = score;
+                    if (currentSpeed > minSpeed) currentSpeed -= speedStep;
+                    food = {
+                        x: Math.floor(Math.random() * 20) * box,
+                        y: Math.floor(Math.random() * 20) * box
+                    };
+                } else {
+                    snake.pop();
+                }
+
+                let newHead = { x: snakeX, y: snakeY };
+
+                if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
+                    clearTimeout(gameTimeout);
+                    alert("Oyun Bitti! Skorun: " + score);
+                    location.reload(); 
+                    return;
+                }
+
+                snake.unshift(newHead);
+                gameTimeout = setTimeout(gameLoop, currentSpeed);
+            }
+            gameLoop();
+        });
+    </script>
+</body>
+</html>

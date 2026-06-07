@@ -72,7 +72,7 @@
         .down { grid-column: 2; grid-row: 2; }
         .right { grid-column: 3; grid-row: 2; }
         
-        /* GÜVENLİ VE ÇALIŞAN SAYAÇ TASARIMI */
+        /* HERKESİN GÖRECEĞİ RESİMSİZ SAYAÇ */
         .visitor-counter {
             margin-top: 25px;
             font-size: 16px;
@@ -83,7 +83,6 @@
             display: inline-block;
             border: 2px solid #4CAF50;
             font-weight: bold;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
         }
     </style>
 </head>
@@ -103,28 +102,14 @@
         </div>
 
         <div class="visitor-counter">
-            <div>🎮 Oyunu Gören Kişi Sayısı</div>
-            <div style="font-size: 24px; color: #4CAF50; margin-top: 5px;" id="live-count">Yükleniyor...</div>
+            <div>🎮 Ziyaretçiler Arkada Sayılıyor!</div>
+            <div style="font-size: 13px; color: #aaa; margin-top: 5px;">Girenleri görmek için panel linkine tıkla.</div>
         </div>
     </div>
 
-    <script defer src="https://unpkg.com/@tinybirdco/flock.js" data-token="p.eyJ1IjogImRiYWM5M2VlLTM5OTUtNGZlYy05Nzk3LWQ4NjE0Y2Y0MWRlOCIsICJpZCI6ICJmYTRkYmU5MC0yMDFlLTQzNzEtYjZlNS1hZTU1YmY0N2ZmN2IifQ.g8X07C3S_wQ9yI9I63Yy5yR6A021pX6A3v9" data-datasource="web_analytics_events"></script>
+    <script data-goatcounter="https://keroxsancak.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
     <script>
-        // SAYAÇ DEĞERİNİ PANELDEKİ VERİDEN ÇEKEN KOD
-        async function updateCounter() {
-            try {
-                const res = await fetch("https://api.tinybird.co/v0/pipes/kpi_pageviews.json?token=p.eyJ1IjogImRiYWM5M2VlLTM5OTUtNGZlYy05Nzk3LWQ4NjE0Y2Y0MWRlOCIsICJpZCI6ICJmYTRkYmU5MC0yMDFlLTQzNzEtYjZlNS1hZTU1YmY0N2ZmN2IifQ.g8X07C3S_wQ9yI9I63Yy5yR6A021pX6A3v9");
-                const data = await res.json();
-                const count = data.data[0]?.pageviews || 1;
-                document.getElementById("live-count").innerText = count;
-            } catch (e) {
-                document.getElementById("live-count").innerText = "1";
-            }
-        }
-        setTimeout(updateCounter, 1000);
-
-        // YILAN OYUNU MANTIĞI
         window.addEventListener("DOMContentLoaded", () => {
             const canvas = document.getElementById("gameCanvas");
             const ctx = canvas.getContext("2d");

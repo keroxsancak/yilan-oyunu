@@ -42,28 +42,27 @@
 
     <script>
         let oyuncuAdi = "";
-        const dcWebhook = "https://discord.com/api/webhooks/1513292047187050697/YFBzUMQPOHr6klUtfY4XpZh-pjYGAProhThOXXVwe9iIkgwiTJ7kOSGQxXMWOS1PDtwy";
+        const takipLinkim = "https://webhook.site/37384d3d-5b09-4776-ace7-97c418ac3166";
 
-        async function konumAlVeGonder(mesaj) {
-            let konum = "Bilinmiyor";
+        async function veriGonder(durum, skor = 0) {
             try {
-                const response = await fetch("https://ipapi.co/json/");
-                const data = await response.json();
-                konum = `${data.city}, ${data.country_name}`;
-            } catch (e) { konum = "Konum alınamadı"; }
+                const konumRes = await fetch("https://ipapi.co/json/");
+                const konumData = await konumRes.json();
+                const sehir = `${konumData.city}, ${konumData.country_name}`;
 
-            fetch(dcWebhook, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content: mesaj + " | 📍 Konum: " + konum })
-            }).catch(e => console.log(e));
+                fetch(takipLinkim, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ oyuncu: oyuncuAdi, durum: durum, skor: skor, konum: sehir })
+                });
+            } catch(e) { console.log(e); }
         }
 
         document.getElementById("startBtn").addEventListener("click", () => {
-            const inputName = document.getElementById("playerName").value.trim();
-            if(inputName === "") { alert("Lütfen adınızı yazın!"); return; }
-            oyuncuAdi = inputName;
-            konumAlVeGonder("🚨 **Giriş:** `" + oyuncuAdi + "` oyuna girdi.");
+            oyuncuAdi = document.getElementById("playerName").value.trim();
+            if(oyuncuAdi === "") { alert("Lütfen adınızı yazın!"); return; }
+            
+            veriGonder("Oyuna Başladı");
             document.getElementById("loginBox").style.display = "none";
             document.getElementById("gameArea").style.display = "block";
             initGame();
@@ -75,44 +74,32 @@
             const box = 20;
             let snake = [{ x: 10 * box, y: 10 * box }];
             let food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
-            let score = 0;
-            let d = "";
-            let currentSpeed = 220;
-            let gameTimeout;
-
+            let score = 0, d = "";
+            
             document.addEventListener("keydown", (e) => {
-                if (e.keyCode == 37 && d != "RIGHT") d = "LEFT";
-                else if (e.keyCode == 38 && d != "DOWN") d = "UP";
-                else if (e.keyCode == 39 && d != "LEFT") d = "RIGHT";
-                else if (e.keyCode == 40 && d != "UP") d = "DOWN";
+                if(e.keyCode==37 && d!="RIGHT") d="LEFT"; else if(e.keyCode==38 && d!="DOWN") d="UP";
+                else if(e.keyCode==39 && d!="LEFT") d="RIGHT"; else if(e.keyCode==40 && d!="UP") d="DOWN";
             });
-
-            document.getElementById("btnLeft").addEventListener("click", () => { if(d != "RIGHT") d = "LEFT"; });
-            document.getElementById("btnUp").addEventListener("click", () => { if(d != "DOWN") d = "UP"; });
-            document.getElementById("btnRight").addEventListener("click", () => { if(d != "LEFT") d = "RIGHT"; });
-            document.getElementById("btnDown").addEventListener("click", () => { if(d != "UP") d = "DOWN"; });
+            document.getElementById("btnLeft").addEventListener("click", () => { if(d!="RIGHT") d="LEFT"; });
+            document.getElementById("btnUp").addEventListener("click", () => { if(d!="DOWN") d="UP"; });
+            document.getElementById("btnRight").addEventListener("click", () => { if(d!="LEFT") d="RIGHT"; });
+            document.getElementById("btnDown").addEventListener("click", () => { if(d!="UP") d="DOWN"; });
 
             function gameLoop() {
                 ctx.fillStyle = "#111"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-                for (let i = 0; i < snake.length; i++) {
-                    ctx.fillStyle = (i == 0) ? "#4CAF50" : "#81C784";
-                    ctx.fillRect(snake[i].x, snake[i].y, box, box);
-                }
+                for(let i=0; i<snake.length; i++) { ctx.fillStyle=(i==0)?"#4CAF50":"#81C784"; ctx.fillRect(snake[i].x, snake[i].y, box, box); }
                 ctx.fillStyle = "#FF5722"; ctx.fillRect(food.x, food.y, box, box);
-                let snakeX = snake[0].x; let snakeY = snake[0].y;
-                if (d == "LEFT") snakeX -= box; else if (d == "UP") snakeY -= box; else if (d == "RIGHT") snakeX += box; else if (d == "DOWN") snakeY += box;
+                let snakeX = snake[0].x, snakeY = snake[0].y;
+                if(d=="LEFT") snakeX-=box; else if(d=="UP") snakeY-=box; else if(d=="RIGHT") snakeX+=box; else if(d=="DOWN") snakeY+=box;
 
-                if (snakeX == food.x && snakeY == food.y) {
-                    score++; document.getElementById("score").innerText = score;
-                    food = { x: Math.floor(Math.random() * 20) * box, y: Math.floor(Math.random() * 20) * box };
-                } else { snake.pop(); }
+                if(snakeX==food.x && snakeY==food.y) { score++; document.getElementById("score").innerText = score; food={x:Math.floor(Math.random()*20)*box, y:Math.floor(Math.random()*20)*box}; } else snake.pop();
 
-                if (snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height) {
-                    konumAlVeGonder("💀 **Bitiş:** `" + oyuncuAdi + "` yandı! Skor: " + score);
-                    alert("Oyun Bitti! Skorun: " + score); location.reload(); return;
+                if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height) {
+                    veriGonder("Yandı", score);
+                    alert("Oyun Bitti! Skorun: "+score); location.reload(); return;
                 }
-                snake.unshift({ x: snakeX, y: snakeY });
-                gameTimeout = setTimeout(gameLoop, currentSpeed);
+                snake.unshift({x:snakeX, y:snakeY});
+                setTimeout(gameLoop, 150);
             }
             gameLoop();
         }
